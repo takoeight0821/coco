@@ -30,7 +30,7 @@
         packages.default =
           let craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
           in craneLib.buildPackage {
-            src = ./.;
+            src = craneLib.cleanCargoSource ./.;
           };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = pkgs.stdenv.mkDerivation {
