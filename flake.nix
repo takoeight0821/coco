@@ -8,9 +8,16 @@
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs = {
+        flake-utils.follows = "flake-utils";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
 
-  outputs = { fenix, flake-utils, nixpkgs, ... }:
+  outputs = { crane, fenix, flake-utils, nixpkgs, ... }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         toolchain = fenix.packages.${system}.fromToolchainFile {
@@ -20,6 +27,11 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
+        packages.default =
+          let craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
+          in craneLib.buildPackage {
+            src = ./.;
+          };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = pkgs.stdenv.mkDerivation {
           name = "rust environment";
