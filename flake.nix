@@ -3,17 +3,11 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
     fenix = {
       url = "github:nix-community/fenix";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    crane = {
-      url = "github:ipetkov/crane";
-      inputs = {
-        flake-utils.follows = "flake-utils";
-        nixpkgs.follows = "nixpkgs";
-      };
     };
   };
 
@@ -31,6 +25,7 @@
           let craneLib = (crane.mkLib pkgs).overrideToolchain toolchain;
           in craneLib.buildPackage {
             src = craneLib.cleanCargoSource ./.;
+            doCheck = true;
           };
         formatter = pkgs.nixpkgs-fmt;
         devShells.default = pkgs.stdenv.mkDerivation {
