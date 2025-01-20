@@ -1,11 +1,13 @@
 use crate::location;
 
 // Core IR
+#[derive(Debug)]
 pub struct Producer<N> {
     pub location: location::Location,
     pub kind: ProducerKind<N>,
 }
 
+#[derive(Debug)]
 pub enum ProducerKind<N> {
     Variable {
         name: N,
@@ -35,23 +37,27 @@ pub enum Literal {
     String(String),
 }
 
+#[derive(Debug)]
 pub struct Coclause<N> {
     pub location: location::Location,
     pub copattern: Copattern<N>,
     pub body: Statement<N>,
 }
 
+#[derive(Debug)]
 pub struct Copattern<N> {
     pub tag: String,
-    pub producers: Vec<N>,
-    pub consumers: Vec<N>,
+    pub parameters: Vec<N>,
+    pub returns: Vec<N>,
 }
 
+#[derive(Debug)]
 pub struct Consumer<N> {
     pub location: location::Location,
     pub kind: ConsumerKind<N>,
 }
 
+#[derive(Debug)]
 pub enum ConsumerKind<N> {
     Finish,
     Variable {
@@ -71,23 +77,27 @@ pub enum ConsumerKind<N> {
     },
 }
 
+#[derive(Debug)]
 pub struct Clause<N> {
     pub location: location::Location,
     pub pattern: Pattern<N>,
     pub body: Statement<N>,
 }
 
+#[derive(Debug)]
 pub struct Pattern<N> {
     pub tag: String,
-    pub producers: Vec<N>,
-    pub consumers: Vec<N>,
+    pub parameters: Vec<N>,
+    pub returns: Vec<N>,
 }
 
+#[derive(Debug)]
 pub struct Statement<N> {
     pub location: location::Location,
     pub kind: StatementKind<N>,
 }
 
+#[derive(Debug)]
 pub enum StatementKind<N> {
     Cut {
         producer: Producer<N>,
@@ -101,7 +111,6 @@ pub enum StatementKind<N> {
     Switch {
         scrutinee: Producer<N>,
         branches: Vec<Branch<N>>,
-        default: Box<Statement<N>>,
     },
     Invoke {
         name: N,
@@ -110,12 +119,24 @@ pub enum StatementKind<N> {
     },
 }
 
+#[derive(Debug)]
 pub struct Branch<N> {
     pub location: location::Location,
-    pub literal: Literal,
-    pub body: Statement<N>,
+    pub kind: BranchKind<N>,
 }
 
+#[derive(Debug)]
+pub enum BranchKind<N> {
+    Litearl {
+        literal: Literal,
+        body: Statement<N>,
+    },
+    Default {
+        body: Statement<N>,
+    },
+}
+
+#[derive(Debug)]
 pub struct Definition<N> {
     pub location: location::Location,
     pub name: N,

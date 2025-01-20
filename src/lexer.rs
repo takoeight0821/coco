@@ -1,5 +1,6 @@
 use crate::{core_ir, token};
 
+#[derive(Clone)]
 pub struct Lexer<'a> {
     pub file: String,
     pub source: std::str::Chars<'a>,
@@ -13,6 +14,14 @@ impl<'a> Lexer<'a> {
             source: source.chars(),
             cursor: 0,
         }
+    }
+
+    pub fn get_cursor(&self) -> usize {
+        self.cursor
+    }
+
+    pub fn set_cursor(&mut self, cursor: usize) {
+        self.cursor = cursor;
     }
 
     /// Returns the current character without advancing the cursor.
@@ -170,6 +179,5 @@ fn is_identifier_start(c: char) -> bool {
 }
 
 fn is_identifier_continue(c: char) -> bool {
-    assert!(is_identifier_start(c));
     c.is_alphanumeric() || c == '_'
 }
