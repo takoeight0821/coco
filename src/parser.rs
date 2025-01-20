@@ -1,22 +1,18 @@
+use crate::core_ir::*;
+use crate::lexer;
+use crate::location;
+use crate::token::*;
 use ariadne::Label;
 use ariadne::Report;
 use ariadne::ReportKind;
 use thiserror::Error;
-
-use crate::location;
-use crate::token;
-use crate::token::Token;
-use crate::token::TokenKind;
-
-use super::core_ir::*;
-use super::lexer;
 
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("unexpected token {actual:?}, expected one of {expected:?}")]
     UnexpectedToken {
         expected: Vec<String>,
-        actual: token::Token,
+        actual: Token,
     },
     #[error("unexpected end of file")]
     UnexpectedEOF { last: location::Location },
@@ -200,7 +196,7 @@ impl<'a> Parser<'a> {
             self.advance();
             return Ok(Producer {
                 location,
-                kind: ProducerKind::Literal { literal },
+                kind: ProducerKind::Literal(literal),
             });
         }
 
@@ -215,10 +211,10 @@ impl<'a> Parser<'a> {
 
         Ok(Producer {
             location,
-            kind: ProducerKind::Do {
+            kind: ProducerKind::Do(Do {
                 name,
                 body: Box::new(statement),
-            },
+            }),
         })
     }
 
@@ -237,7 +233,7 @@ impl<'a> Parser<'a> {
 
         Ok(Producer {
             location,
-            kind: ProducerKind::Variable { name },
+            kind: ProducerKind::Variable(Variable { name }),
         })
     }
 
@@ -254,11 +250,11 @@ impl<'a> Parser<'a> {
 
         Ok(Producer {
             location,
-            kind: ProducerKind::Construct {
+            kind: ProducerKind::Construct(Construct {
                 tag: name,
                 producers,
                 consumers,
-            },
+            }),
         })
     }
 
@@ -290,10 +286,10 @@ impl<'a> Parser<'a> {
 
         Ok(Consumer {
             location,
-            kind: ConsumerKind::Then {
+            kind: ConsumerKind::Then(Then {
                 name,
                 body: Box::new(body),
-            },
+            }),
         })
     }
 
@@ -307,7 +303,7 @@ impl<'a> Parser<'a> {
 
         Ok(Consumer {
             location,
-            kind: ConsumerKind::Match { clauses },
+            kind: ConsumerKind::Match(Match { clauses }),
         })
     }
 
@@ -347,7 +343,7 @@ impl<'a> Parser<'a> {
         let (name, location) = self.identifier()?;
         Ok(Consumer {
             location,
-            kind: ConsumerKind::Variable { name },
+            kind: ConsumerKind::Variable(Variable { name }),
         })
     }
 
@@ -362,7 +358,7 @@ impl<'a> Parser<'a> {
                 let location = producer.location.to(&consumer.location);
                 Ok(Statement {
                     location,
-                    kind: StatementKind::Cut { producer, consumer },
+                    kind: StatementKind::Cut(Cut { producer, consumer }),
                 })
             }
             token => Err(Error::UnexpectedToken {
@@ -383,11 +379,11 @@ impl<'a> Parser<'a> {
         let location = prim.location.to(&right_paren.location);
         Ok(Statement {
             location,
-            kind: StatementKind::Prim {
+            kind: StatementKind::Prim(Prim {
                 name,
                 producers,
                 consumers,
-            },
+            }),
         })
     }
 
@@ -395,17 +391,16 @@ impl<'a> Parser<'a> {
         let switch = self.expect_keyword("switch")?;
         let producer = self.producer()?;
         self.expect_punctuation("{")?;
-        let (branches, right_brace): (Vec<_>, _) =
-            self.sep_end("}", ",", |parser| parser.branch())?;
+        let (branches, right_brace) = self.sep_end("}", ",", |parser| parser.branch())?;
 
         let location = switch.location.to(&right_brace.location);
 
         Ok(Statement {
             location,
-            kind: StatementKind::Switch {
+            kind: StatementKind::Switch(Switch {
                 scrutinee: producer,
                 branches,
-            },
+            }),
         })
     }
 
@@ -424,7 +419,7 @@ impl<'a> Parser<'a> {
 
                 return Ok(Branch {
                     location,
-                    kind: BranchKind::Default { body },
+                    kind: BranchKind::DefaultBranch(body),
                 });
             }
         }
@@ -442,7 +437,7 @@ impl<'a> Parser<'a> {
 
             return Ok(Branch {
                 location,
-                kind: BranchKind::Litearl { literal, body },
+                kind: BranchKind::LiteralBranch(LiteralBranch { literal, body }),
             });
         }
 
@@ -517,11 +512,11 @@ impl<'a> Parser<'a> {
         let location = invoke.location.to(&right_paren.location);
         Ok(Statement {
             location,
-            kind: StatementKind::Invoke {
+            kind: StatementKind::Invoke(Invoke {
                 name,
                 producers,
                 consumers,
-            },
+            }),
         })
     }
 }

@@ -8,25 +8,35 @@ pub struct Producer<N> {
 }
 
 #[derive(Debug)]
+pub struct Variable<N> {
+    pub name: N,
+}
+
+#[derive(Debug)]
+pub struct Do<N> {
+    pub name: N,
+    pub body: Box<Statement<N>>,
+}
+
+#[derive(Debug)]
+pub struct Construct<N> {
+    pub tag: String,
+    pub producers: Vec<Producer<N>>,
+    pub consumers: Vec<Consumer<N>>,
+}
+
+#[derive(Debug)]
+pub struct Comatch<N> {
+    pub clauses: Vec<Coclause<N>>,
+}
+
+#[derive(Debug)]
 pub enum ProducerKind<N> {
-    Variable {
-        name: N,
-    },
-    Literal {
-        literal: Literal,
-    },
-    Do {
-        name: N,
-        body: Box<Statement<N>>,
-    },
-    Construct {
-        tag: String,
-        producers: Vec<Producer<N>>,
-        consumers: Vec<Consumer<N>>,
-    },
-    Comatch {
-        clauses: Vec<Coclause<N>>,
-    },
+    Variable(Variable<N>),
+    Literal(Literal),
+    Do(Do<N>),
+    Construct(Construct<N>),
+    Comatch(Comatch<N>),
 }
 
 #[derive(Debug)]
@@ -58,23 +68,30 @@ pub struct Consumer<N> {
 }
 
 #[derive(Debug)]
+pub struct Then<N> {
+    pub name: N,
+    pub body: Box<Statement<N>>,
+}
+
+#[derive(Debug)]
+pub struct Destruct<N> {
+    pub tag: String,
+    pub producers: Vec<Producer<N>>,
+    pub consumers: Vec<Consumer<N>>,
+}
+
+#[derive(Debug)]
+pub struct Match<N> {
+    pub clauses: Vec<Clause<N>>,
+}
+
+#[derive(Debug)]
 pub enum ConsumerKind<N> {
     Finish,
-    Variable {
-        name: N,
-    },
-    Then {
-        name: N,
-        body: Box<Statement<N>>,
-    },
-    Destruct {
-        tag: String,
-        producers: Vec<Producer<N>>,
-        consumers: Vec<Consumer<N>>,
-    },
-    Match {
-        clauses: Vec<Clause<N>>,
-    },
+    Variable(Variable<N>),
+    Then(Then<N>),
+    Destruct(Destruct<N>),
+    Match(Match<N>),
 }
 
 #[derive(Debug)]
@@ -98,25 +115,37 @@ pub struct Statement<N> {
 }
 
 #[derive(Debug)]
+pub struct Cut<N> {
+    pub producer: Producer<N>,
+    pub consumer: Consumer<N>,
+}
+
+#[derive(Debug)]
+pub struct Prim<N> {
+    pub name: String,
+    pub producers: Vec<Producer<N>>,
+    pub consumers: Vec<Consumer<N>>,
+}
+
+#[derive(Debug)]
+pub struct Switch<N> {
+    pub scrutinee: Producer<N>,
+    pub branches: Vec<Branch<N>>,
+}
+
+#[derive(Debug)]
+pub struct Invoke<N> {
+    pub name: N,
+    pub producers: Vec<Producer<N>>,
+    pub consumers: Vec<Consumer<N>>,
+}
+
+#[derive(Debug)]
 pub enum StatementKind<N> {
-    Cut {
-        producer: Producer<N>,
-        consumer: Consumer<N>,
-    },
-    Prim {
-        name: String,
-        producers: Vec<Producer<N>>,
-        consumers: Vec<Consumer<N>>,
-    },
-    Switch {
-        scrutinee: Producer<N>,
-        branches: Vec<Branch<N>>,
-    },
-    Invoke {
-        name: N,
-        producers: Vec<Producer<N>>,
-        consumers: Vec<Consumer<N>>,
-    },
+    Cut(Cut<N>),
+    Prim(Prim<N>),
+    Switch(Switch<N>),
+    Invoke(Invoke<N>),
 }
 
 #[derive(Debug)]
@@ -126,14 +155,15 @@ pub struct Branch<N> {
 }
 
 #[derive(Debug)]
+pub struct LiteralBranch<N> {
+    pub literal: Literal,
+    pub body: Statement<N>,
+}
+
+#[derive(Debug)]
 pub enum BranchKind<N> {
-    Litearl {
-        literal: Literal,
-        body: Statement<N>,
-    },
-    Default {
-        body: Statement<N>,
-    },
+    LiteralBranch(LiteralBranch<N>),
+    DefaultBranch(Statement<N>),
 }
 
 #[derive(Debug)]
